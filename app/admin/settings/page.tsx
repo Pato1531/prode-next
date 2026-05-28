@@ -9,6 +9,18 @@ import { Settings, Download, AlertTriangle, RefreshCw } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
+// void wrappers
+async function exportRankings() { "use server"; await adminExportRankingsAction() }
+async function resetTournament() { "use server"; await adminResetTournamentAction() }
+async function updateSettings(formData: FormData) {
+  "use server"
+  await adminUpdateSettingsAction({
+    registrationOpen: formData.get("registrationOpen") === "on",
+    predictionsEnabled: formData.get("predictionsEnabled") === "on",
+    maxParticipants: Number(formData.get("maxParticipants") ?? 0),
+  })
+}
+
 export default async function AdminSettingsPage() {
   const settings = await prisma.adminSettings.findUnique({ where: { id: "singleton" } })
 
@@ -19,7 +31,6 @@ export default async function AdminSettingsPage() {
         <p className="text-sm text-muted-foreground">Ajustes globales del torneo</p>
       </div>
 
-      {/* Settings form */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -28,7 +39,7 @@ export default async function AdminSettingsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form action={adminUpdateSettingsAction} className="space-y-5">
+          <form action={updateSettings} className="space-y-5">
             <div className="flex items-center justify-between rounded-lg border p-4">
               <div>
                 <Label htmlFor="registrationOpen" className="font-medium">Registro abierto</Label>
@@ -40,7 +51,6 @@ export default async function AdminSettingsPage() {
                 defaultChecked={settings?.registrationOpen ?? true}
               />
             </div>
-
             <div className="flex items-center justify-between rounded-lg border p-4">
               <div>
                 <Label htmlFor="predictionsEnabled" className="font-medium">Predicciones habilitadas</Label>
@@ -52,7 +62,6 @@ export default async function AdminSettingsPage() {
                 defaultChecked={settings?.predictionsEnabled ?? true}
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="maxParticipants">Límite de participantes (0 = sin límite)</Label>
               <Input
@@ -64,13 +73,11 @@ export default async function AdminSettingsPage() {
                 className="max-w-xs"
               />
             </div>
-
             <Button type="submit">Guardar cambios</Button>
           </form>
         </CardContent>
       </Card>
 
-      {/* Export */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -79,7 +86,7 @@ export default async function AdminSettingsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form action={adminExportRankingsAction}>
+          <form action={exportRankings}>
             <Button type="submit" variant="outline" className="gap-2">
               <Download className="h-4 w-4" />
               Descargar ranking CSV
@@ -88,7 +95,6 @@ export default async function AdminSettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Danger zone */}
       <Card className="border-red-500/30">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base text-red-400">
@@ -98,17 +104,8 @@ export default async function AdminSettingsPage() {
           <CardDescription>Estas acciones son irreversibles</CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={adminResetTournamentAction}>
-            <Button
-              type="submit"
-              variant="destructive"
-              className="gap-2"
-              onClick={(e) => {
-                if (!confirm("¿Estás seguro? Esto eliminará TODOS los datos del torneo y no se puede deshacer.")) {
-                  e.preventDefault()
-                }
-              }}
-            >
+          <form action={resetTournament}>
+            <Button type="submit" variant="destructive" className="gap-2">
               <RefreshCw className="h-4 w-4" />
               Resetear torneo completo
             </Button>
