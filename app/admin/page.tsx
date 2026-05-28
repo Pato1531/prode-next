@@ -113,7 +113,7 @@ export default async function AdminPage() {
               <div key={p.id} className="flex items-center justify-between text-sm">
                 <span className="font-medium">@{p.user.nickname}</span>
                 <span className="text-muted-foreground">
-                  {p.match.homeTeam.name} {p.homeScore}-{p.awayScore} {p.match.awayTeam.name}
+                  {p.match.homeTeam.name} {p.predictedHomeScore}-{p.predictedAwayScore} {p.match.awayTeam.name}
                 </span>
                 <span className="text-xs text-muted-foreground">
                   {formatDistanceToNow(p.createdAt, { addSuffix: true })}
