@@ -1,4 +1,4 @@
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
@@ -12,7 +12,7 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
@@ -25,14 +25,12 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Refresh session
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
 
-  // Public routes — no auth needed
   const publicRoutes = ["/", "/auth/login", "/auth/register", "/blocked"];
   const isPublicRoute = publicRoutes.some((route) => pathname === route);
   const isApiRoute = pathname.startsWith("/api");
@@ -41,26 +39,15 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse;
   }
 
-  // Protected — redirect to login if not authenticated
   if (!user) {
     return NextResponse.redirect(new URL("/auth/login", request.url));
   }
-
-  // Admin routes — additional check is done in server actions/pages
-  // (DB role check cannot be done in edge middleware cheaply)
 
   return supabaseResponse;
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths EXCEPT:
-     * - _next/static (static files)
-     * - _next/image (image optimization)
-     * - favicon.ico, sitemap.xml, robots.txt
-     * - Public images
-     */
     "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
