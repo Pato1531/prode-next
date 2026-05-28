@@ -9,15 +9,16 @@ import { Settings, Download, AlertTriangle, RefreshCw } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
-// void wrappers
 async function exportRankings() { "use server"; await adminExportRankingsAction() }
 async function resetTournament() { "use server"; await adminResetTournamentAction() }
+
 async function updateSettings(formData: FormData) {
   "use server"
   await adminUpdateSettingsAction({
-    registrationOpen: formData.get("registrationOpen") === "on",
-    predictionsEnabled: formData.get("predictionsEnabled") === "on",
-    maxParticipants: Number(formData.get("maxParticipants") ?? 0),
+    predictionsOpen: formData.get("predictionsOpen") === "on",
+    pointsExactScore: Number(formData.get("pointsExactScore") ?? 3),
+    pointsCorrectWinner: Number(formData.get("pointsCorrectWinner") ?? 1),
+    pointsSemifinalist: Number(formData.get("pointsSemifinalist") ?? 2),
   })
 }
 
@@ -40,39 +41,56 @@ export default async function AdminSettingsPage() {
         </CardHeader>
         <CardContent>
           <form action={updateSettings} className="space-y-5">
+            {/* Toggle predicciones */}
             <div className="flex items-center justify-between rounded-lg border p-4">
               <div>
-                <Label htmlFor="registrationOpen" className="font-medium">Registro abierto</Label>
-                <p className="text-xs text-muted-foreground mt-0.5">Permitir que nuevos usuarios se registren</p>
+                <Label htmlFor="predictionsOpen" className="font-medium">Predicciones abiertas</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">Permitir que los usuarios guarden predicciones</p>
               </div>
               <Switch
-                id="registrationOpen"
-                name="registrationOpen"
-                defaultChecked={settings?.registrationOpen ?? true}
+                id="predictionsOpen"
+                name="predictionsOpen"
+                defaultChecked={settings?.predictionsOpen ?? true}
               />
             </div>
-            <div className="flex items-center justify-between rounded-lg border p-4">
-              <div>
-                <Label htmlFor="predictionsEnabled" className="font-medium">Predicciones habilitadas</Label>
-                <p className="text-xs text-muted-foreground mt-0.5">Permitir guardar predicciones</p>
+
+            {/* Puntajes */}
+            <div className="space-y-3">
+              <p className="text-sm font-medium">Puntajes</p>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="pointsExactScore" className="text-xs">Score exacto</Label>
+                  <Input
+                    id="pointsExactScore"
+                    name="pointsExactScore"
+                    type="number"
+                    min={0}
+                    defaultValue={settings?.pointsExactScore ?? 3}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="pointsCorrectWinner" className="text-xs">Ganador correcto</Label>
+                  <Input
+                    id="pointsCorrectWinner"
+                    name="pointsCorrectWinner"
+                    type="number"
+                    min={0}
+                    defaultValue={settings?.pointsCorrectWinner ?? 1}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="pointsSemifinalist" className="text-xs">Semifinalista</Label>
+                  <Input
+                    id="pointsSemifinalist"
+                    name="pointsSemifinalist"
+                    type="number"
+                    min={0}
+                    defaultValue={settings?.pointsSemifinalist ?? 2}
+                  />
+                </div>
               </div>
-              <Switch
-                id="predictionsEnabled"
-                name="predictionsEnabled"
-                defaultChecked={settings?.predictionsEnabled ?? true}
-              />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="maxParticipants">Límite de participantes (0 = sin límite)</Label>
-              <Input
-                id="maxParticipants"
-                name="maxParticipants"
-                type="number"
-                min={0}
-                defaultValue={settings?.maxParticipants ?? 0}
-                className="max-w-xs"
-              />
-            </div>
+
             <Button type="submit">Guardar cambios</Button>
           </form>
         </CardContent>
