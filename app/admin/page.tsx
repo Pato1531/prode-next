@@ -8,6 +8,11 @@ import { formatDistanceToNow } from "date-fns"
 
 export const dynamic = "force-dynamic"
 
+// void wrappers
+async function syncLive() { "use server"; await adminSyncLiveAction() }
+async function syncFixtures() { "use server"; await adminSyncFixturesAction() }
+async function recalculate() { "use server"; await adminRecalculateScoresAction() }
+
 async function getStats() {
   const [userCount, matchCount, predCount, liveMatches, recentPreds] = await Promise.all([
     prisma.user.count({ where: { isBlocked: false } }),
@@ -33,7 +38,6 @@ export default async function AdminPage() {
         <p className="text-muted-foreground text-sm">World Cup 2026 — Panel de Control</p>
       </div>
 
-      {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { label: "Usuarios activos", value: userCount, icon: Users, color: "text-blue-400" },
@@ -53,7 +57,6 @@ export default async function AdminPage() {
         ))}
       </div>
 
-      {/* Live matches */}
       {liveMatches.length > 0 && (
         <Card className="border-red-500/30 bg-red-950/20">
           <CardHeader>
@@ -66,9 +69,7 @@ export default async function AdminPage() {
             {liveMatches.map((m) => (
               <div key={m.id} className="flex items-center justify-between rounded-lg bg-background/50 px-3 py-2 text-sm">
                 <span>{m.homeTeam.name}</span>
-                <span className="font-bold text-red-400">
-                  {m.homeScore ?? 0} - {m.awayScore ?? 0}
-                </span>
+                <span className="font-bold text-red-400">{m.homeScore ?? 0} - {m.awayScore ?? 0}</span>
                 <span>{m.awayTeam.name}</span>
               </div>
             ))}
@@ -76,7 +77,6 @@ export default async function AdminPage() {
         </Card>
       )}
 
-      {/* Actions */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -85,28 +85,24 @@ export default async function AdminPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
-          <form action={adminSyncLiveAction}>
+          <form action={syncLive}>
             <Button type="submit" variant="outline" size="sm" className="gap-2">
-              <Activity className="h-4 w-4" />
-              Sync en vivo
+              <Activity className="h-4 w-4" />Sync en vivo
             </Button>
           </form>
-          <form action={adminSyncFixturesAction}>
+          <form action={syncFixtures}>
             <Button type="submit" variant="outline" size="sm" className="gap-2">
-              <Calendar className="h-4 w-4" />
-              Sync fixture
+              <Calendar className="h-4 w-4" />Sync fixture
             </Button>
           </form>
-          <form action={adminRecalculateScoresAction}>
+          <form action={recalculate}>
             <Button type="submit" variant="outline" size="sm" className="gap-2">
-              <RefreshCw className="h-4 w-4" />
-              Recalcular puntajes
+              <RefreshCw className="h-4 w-4" />Recalcular puntajes
             </Button>
           </form>
         </CardContent>
       </Card>
 
-      {/* Recent predictions */}
       {recentPreds.length > 0 && (
         <Card>
           <CardHeader>
