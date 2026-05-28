@@ -12,14 +12,22 @@ import { Megaphone, Send, CheckCircle, XCircle } from "lucide-react"
 export default function AdminAnnouncementsPage() {
   const [isPending, startTransition] = useTransition()
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null)
+  const [title, setTitle] = useState("")
+  const [body, setBody] = useState("")
 
-  async function handleSubmit(formData: FormData) {
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
     startTransition(async () => {
-      const res = await adminCreateAnnouncementAction(formData)
-      setResult({ success: res.success, message: res.success ? "Anuncio publicado y notificaciones enviadas" : (res.error ?? "Error") })
+      const res = await adminCreateAnnouncementAction({ title, body, pinned: false })
+      setResult({
+        success: res.success,
+        message: res.success
+          ? "Anuncio publicado y notificaciones enviadas"
+          : (res.error ?? "Error"),
+      })
       if (res.success) {
-        const form = document.getElementById("announcement-form") as HTMLFormElement
-        form?.reset()
+        setTitle("")
+        setBody("")
         setTimeout(() => setResult(null), 4000)
       }
     })
@@ -40,22 +48,24 @@ export default function AdminAnnouncementsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form id="announcement-form" action={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="title">Título</Label>
               <Input
                 id="title"
-                name="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 placeholder="ej: ¡Comienza la fase de grupos!"
                 required
                 maxLength={120}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="content">Contenido</Label>
+              <Label htmlFor="body">Contenido</Label>
               <Textarea
-                id="content"
-                name="content"
+                id="body"
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
                 placeholder="Escribí el mensaje del anuncio..."
                 rows={4}
                 maxLength={500}
@@ -69,10 +79,7 @@ export default function AdminAnnouncementsPage() {
               </Button>
               {result && (
                 <div className={`flex items-center gap-2 text-sm ${result.success ? "text-green-400" : "text-red-400"}`}>
-                  {result.success
-                    ? <CheckCircle className="h-4 w-4" />
-                    : <XCircle className="h-4 w-4" />
-                  }
+                  {result.success ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
                   {result.message}
                 </div>
               )}
