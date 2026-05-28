@@ -66,8 +66,8 @@ export default async function RankingPage() {
   }));
 
   const rankedWeekly = weeklyRanking.map((w, idx) => ({
-    rank: idx + 1,
     ...w,
+    rank: idx + 1,
     isCurrentUser: w.user.id === user.id,
   }));
 
