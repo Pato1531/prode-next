@@ -18,14 +18,6 @@ const STATUS_LABELS: Record<MatchStatus, string> = {
   CANCELLED: "Cancelado",
 }
 
-const STATUS_COLORS: Record<MatchStatus, string> = {
-  SCHEDULED: "secondary",
-  LIVE: "destructive",
-  FINISHED: "outline",
-  POSTPONED: "secondary",
-  CANCELLED: "secondary",
-}
-
 const PHASE_LABELS: Record<MatchPhase, string> = {
   GROUP: "Fase de Grupos",
   ROUND_OF_32: "Ronda de 32",
@@ -34,6 +26,17 @@ const PHASE_LABELS: Record<MatchPhase, string> = {
   SEMI_FINAL: "Semifinal",
   THIRD_PLACE: "3er y 4to Puesto",
   FINAL: "Final",
+}
+
+// Wrappers que devuelven void para usar como form actions
+async function syncLive() {
+  "use server"
+  await adminSyncLiveAction()
+}
+
+async function syncFixtures() {
+  "use server"
+  await adminSyncFixturesAction()
 }
 
 export default async function AdminMatchesPage() {
@@ -57,13 +60,13 @@ export default async function AdminMatchesPage() {
           <p className="text-sm text-muted-foreground">{matches.length} partidos en total</p>
         </div>
         <div className="flex gap-2">
-          <form action={adminSyncLiveAction}>
+          <form action={syncLive}>
             <Button type="submit" variant="outline" size="sm" className="gap-1.5">
               <Activity className="h-3.5 w-3.5" />
               Sync live
             </Button>
           </form>
-          <form action={adminSyncFixturesAction}>
+          <form action={syncFixtures}>
             <Button type="submit" variant="outline" size="sm" className="gap-1.5">
               <RefreshCw className="h-3.5 w-3.5" />
               Sync fixture
@@ -81,12 +84,9 @@ export default async function AdminMatchesPage() {
             <CardContent className="p-0 divide-y">
               {phaseMatches.map((match) => (
                 <div key={match.id} className="flex items-center gap-3 px-4 py-3 text-sm">
-                  {/* Date */}
                   <div className="w-28 shrink-0 text-xs text-muted-foreground">
                     {format(match.kickoffAt, "dd/MM HH:mm", { locale: es })}
                   </div>
-
-                  {/* Teams */}
                   <div className="flex flex-1 items-center gap-2 min-w-0">
                     <span className="truncate text-right flex-1">{match.homeTeam.name}</span>
                     <span className="shrink-0 font-bold tabular-nums">
@@ -96,13 +96,11 @@ export default async function AdminMatchesPage() {
                     </span>
                     <span className="truncate flex-1">{match.awayTeam.name}</span>
                   </div>
-
-                  {/* Status */}
                   <div className="flex items-center gap-1.5 shrink-0">
                     {match.predictionsLocked && (
                       <Lock className="h-3 w-3 text-muted-foreground" />
                     )}
-                    <Badge variant={STATUS_COLORS[match.status] as any} className="text-xs">
+                    <Badge variant="outline" className="text-xs">
                       {STATUS_LABELS[match.status]}
                     </Badge>
                   </div>
