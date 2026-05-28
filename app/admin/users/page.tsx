@@ -35,7 +35,7 @@ export default async function AdminUsersPage() {
                 <div key={user.id} className="flex items-center gap-4 px-4 py-3">
                   <Avatar className="h-9 w-9">
                     <AvatarFallback className="text-xs">
-                      {getInitials(`${user.firstName} ${user.lastName}`)}
+                      {getInitials(user.firstName, user.lastName)}
                     </AvatarFallback>
                   </Avatar>
 
