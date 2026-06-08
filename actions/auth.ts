@@ -34,7 +34,7 @@ export async function registerAction(
     nickname: formData.get("nickname") as string,
     email: formData.get("email") as string,
     password: formData.get("password") as string,
-    curso: formData.get("curso") as string | undefined,
+    curso: formData.get("curso") as string ?? undefined,
   };
 
   const parsed = registerSchema.safeParse(raw);
